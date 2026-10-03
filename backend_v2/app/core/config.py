@@ -14,6 +14,7 @@ eventually need to account for.
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,6 +23,20 @@ class Settings(BaseSettings):
 
     app_env: str = "development"
     database_url: str = "postgresql+psycopg://sentinel:sentinel@localhost:5432/sentinel"
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def _force_psycopg3(cls, v: str) -> str:
+        # Only psycopg 3 is installed (requirements.txt: psycopg[binary]).
+        # A bare "postgresql://" or "postgres://" makes SQLAlchemy pick the
+        # psycopg2 dialect, which raises ModuleNotFoundError at first connect.
+        # Managed Postgres providers hand out exactly that form -- Vercel's
+        # Neon integration sets DATABASE_URL to "postgresql://..." -- so pin
+        # the driver here instead of trusting the URL we are given.
+        for bare in ("postgresql://", "postgres://"):
+            if v.startswith(bare):
+                return "postgresql+psycopg://" + v[len(bare) :]
+        return v
     log_level: str = "info"
     # Default assumes `backend_v2/` sits beside `data/` at the repo root
     # (true for a local, non-Docker run); overridden to /data by the
