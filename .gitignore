@@ -48,3 +48,7 @@ ci-artifacts/
 # negations above.
 .env.local
 .env.*.local
+
+# Neon marketplace integration tooling (auto-installed by `vercel integration add`).
+.agents/
+skills-lock.json
