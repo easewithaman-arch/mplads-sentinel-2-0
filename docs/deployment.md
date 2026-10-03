@@ -6,7 +6,7 @@ Updated 2026-10-02 to the deployed layout: Vercel Services, frontend and backend
 
 | Part | Where | What |
 | --- | --- | --- |
-| **Frontend** | Vercel service `frontend` | `frontend/`, framework `vite`. The SPA fallback is this service's own `rewrites` entry in the root `vercel.json`. |
+| **Frontend** | Vercel service `frontend` | `frontend/`, framework `vite`. The SPA fallback and the `/geo/*` cache header are this service's own `rewrites` and `headers` entries in the root `vercel.json`. |
 | **Backend** | Vercel service `backend` | `backend_v2/`, runtime `container`, built from `backend_v2/Dockerfile.vercel` (FastAPI on uvicorn). Stateless: the data lives in the database. |
 | **Routing** | Root `vercel.json`, top-level `rewrites`, in order | `/api/*` → `backend`; everything else → `frontend`. |
 | **Database** | PostgreSQL (`DATABASE_URL`) | A slim copy of published **run 44**, checksum `c4d589e0e0fc40621d4e011a64a7233d`. See "Slim database" below. |
@@ -14,7 +14,7 @@ Updated 2026-10-02 to the deployed layout: Vercel Services, frontend and backend
 
 - The frontend and the API share one origin. With `VITE_API_BASE_URL` unset, the frontend calls `/api` (`frontend/src/services/api.js:1`), which Vercel routes to the backend.
 - SPA fallback: a path whose last segment has no dot (no file extension) is served `/index.html`, so deep links and refreshes load the app. A path with an extension (an asset, or a missing file) is not rewritten. `backend_v2/tests/test_phase14_deploy.py::test_vercel_layout_frontend_spa_and_backend_container` pins the layout and the rewrite.
-- `frontend/vercel.json` (the standalone SPA rewrite from the first layout) is still in the repo. The Services layout routes through the root `vercel.json`.
+- One config file per project: the root `vercel.json` is the only one. The standalone `frontend/vercel.json` of the first layout has been removed; the SPA fallback and the `/geo/*` cache header are the frontend service's own `rewrites` and `headers` entries in the root `vercel.json`, which is where the Services layout reads them.
 
 ## Environment variables
 

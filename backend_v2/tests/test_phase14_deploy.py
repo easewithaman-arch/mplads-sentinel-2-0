@@ -11,10 +11,10 @@ Phase 14: the Vercel frontend deployment and the backend it reaches.
   * Access: the investigation log, case export, audit and reviewer endpoints
     and payee profiles answer 401 to an anonymous caller (what the public site
     is); ANONYMOUS_READ is the explicit switch for the rest.
-  * Deploy files: frontend/vercel.json is the SPA rewrite only; the root
-    vercel.json is the Services layout (frontend + backend container, /api/* to
-    the backend, SPA fallback inside the frontend service); the only frontend
-    source change is the API_BASE line; env files are ignored.
+  * Deploy files: the root vercel.json is the Services layout (frontend +
+    backend container, /api/* to the backend, SPA fallback and static-asset
+    caching inside the frontend service); the only frontend source change is the
+    API_BASE line; env files are ignored.
 """
 
 from __future__ import annotations
@@ -217,10 +217,11 @@ def test_anonymous_read_is_an_explicit_env_switch(monkeypatch):
 
 
 def test_vercel_layout_frontend_spa_and_backend_container():
-    # frontend/vercel.json is the standalone-project SPA rewrite; in the Services layout
-    # Vercel routes through the ROOT vercel.json, so the SPA fallback is repeated there.
-    cfg = json.loads((REPO / "frontend" / "vercel.json").read_text("utf-8"))
-    assert cfg == {"rewrites": [{"source": "/(.*)", "destination": "/index.html"}]}
+    # One config file per project: the ROOT vercel.json is the only one. The
+    # standalone-project vercel.json under frontend/ (first Phase 14 layout) is
+    # gone, so the SPA fallback and the /geo/* cache header live in the frontend
+    # service below, where the Services layout actually reads them.
+    assert not (REPO / "frontend" / "vercel.json").exists()
 
     root = json.loads((REPO / "vercel.json").read_text("utf-8"))
     assert root["services"]["backend"] == {
@@ -244,6 +245,15 @@ def test_vercel_layout_frontend_spa_and_backend_container():
         assert rx.match(path), path
     for path in ("/assets/index-abc123.js", "/favicon.png", "/missing.js", "/a/b.c/d.txt", "/robots.txt"):
         assert not rx.match(path), path
+    # The static outline file (476 KB) is cached by the frontend service.
+    (geo,) = frontend["headers"]
+    assert geo["source"] == "/geo/(.*)"
+    assert geo["headers"] == [
+        {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400, stale-while-revalidate=604800",
+        }
+    ]
 
 
 def test_the_only_frontend_source_change_is_api_base():

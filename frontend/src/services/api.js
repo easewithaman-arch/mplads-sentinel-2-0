@@ -216,7 +216,8 @@ export async function getBoundaryOutlines(timeoutMs = 20000) {
 // frontend (backend_v2/scripts/build_static_outlines.py writes
 // frontend/public/geo/india-outlines.json), so no request does geometry work.
 // Bump the version when the file is regenerated: browsers keep it for a day
-// (frontend/vercel.json) and the new query string fetches it at once.
+// (the frontend service's /geo/* rule in the root vercel.json) and the new
+// query string fetches it at once.
 export const STATIC_OUTLINES_VERSION = '28c0d76a9c24';
 
 // The 2019 seats with no portal seat (today Khadoor Sahib, Punjab), which

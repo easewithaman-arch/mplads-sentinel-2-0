@@ -296,7 +296,9 @@ def test_every_frontend_api_call_has_a_route():
     """Old system: the frontend called endpoints the backend didn't have,
     and the chatbot route had been deleted."""
     calls = _api_js_calls()
-    assert len(calls) == 32, calls
+    # Pinned count: every frontend call is one backend route. Bump it only when a
+    # call is added AND its route exists (the check below is the real guarantee).
+    assert len(calls) == 33, calls
     missing = [(m, p) for m, p in calls if _match(m, p) is None]
     assert not missing, missing
 

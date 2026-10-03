@@ -39,3 +39,12 @@ data/processed/
 # backend_v2/app/ingest/geo_load.py for provenance/licence).
 backend_v2/app/geo_data_src/
 ci-artifacts/
+
+# Vercel CLI project link
+.vercel/
+.vercel
+# Local env overrides. Deliberately NOT a bare `.env*`: that pattern also matches
+# the tracked .env.example placeholders and, being last, would win over the
+# negations above.
+.env.local
+.env.*.local

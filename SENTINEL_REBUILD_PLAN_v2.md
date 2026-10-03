@@ -505,8 +505,9 @@ lists the checks to run once on a preview.
 
 Carried over from the original note: `services/api.js` reads `import.meta.env.VITE_API_BASE_URL`,
 falling back to `/api`; `frontend/.env.example` documents it as public; CORS is an exact origin list,
-never `*`. `frontend/vercel.json` (the standalone SPA rewrite from the first layout) is still in the
-repo, but the Services layout routes through the root `vercel.json`.
+never `*`. The standalone `frontend/vercel.json` from the first layout has been removed: the root
+`vercel.json` is the project's only config file, and the Services layout reads the SPA fallback and the
+`/geo/*` cache header from the frontend service's own `rewrites` and `headers` entries.
 
 The first Phase 14 layout (2026-09-28: Vercel frontend, local Docker backend behind a Cloudflare quick
 tunnel, `docker-compose.deploy.yml`) is superseded; `docs/deployment.md` describes the current layout.
